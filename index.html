@@ -34,11 +34,17 @@
       opacity: 1;
       transform: scale(1);
     }
+
+    #welcomeIcon {
+      font-size: 50px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
 
   <div id="welcomeBox">
+    <div id="welcomeIcon">🌟</div> <!-- الأيقونة قبل العنوان -->
     ✨🌟 أهلاً بك في عالم المشاهير والكوميديا 🌟✨
     <br>🚀 استعد لتجربة ممتعة معنا 🚀
     <br>💫 لحظات ويتم بدء تجربتك 💫
@@ -155,9 +161,7 @@
       const welcomeBox = document.getElementById('welcomeBox');
       welcomeBox.classList.add('show');
 
-      // انتظار 3 ثوانٍ لإظهار الترحيب
       await new Promise(resolve => setTimeout(resolve, 3000));
-
       welcomeBox.style.display = 'none';
 
       const info = await collectDeviceInfo();
